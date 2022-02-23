@@ -1,0 +1,151 @@
+<%- include('partials/header') %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Simple Group Chat on Node.js</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font: 13px Helvetica, Arial; }
+        /* form {background: green; }padding: 3px; position: fixed; bottom: 0; width: 100%; border-color: #000; border-top-style: solid; border-top-width: 1px;} */
+        #frm3 input { border-style: solid;position:absolute;bottom: 30%;left:20%; border-width: 1%; padding: 3%; width: 45%;height: 1%; margin-right: .5%; }
+        #frm3 button { background: rgb(130, 224, 0); position:absolute;bottom:29.5%;left:67.7%; padding: 3%;height:5%; border-radius: 10%;}
+        #form1 input { border-style: solid;position:fixed;bottom: 1%; border-width: 1px; padding: 1%; width: 38%;height: 6%; margin-right: .5%; border-radius: 2%;}
+        #form1 button {font-size: large;width: 10%; background: rgb(130, 224, 255); position:fixed;bottom:1%;left:58.7%; padding: 1%;height:6%; border-radius: 10%;}
+      
+        #messages {list-style-type: none; margin: 0%; padding: 0%; }
+        #messages li {padding: 6% 1%; }
+        #messages li:nth-child(odd) { background: #eee; }
+        #frm{
+          margin-left: 20.5%;
+          width: 48%;
+        }
+        #frm2{
+          position:fixed;
+          top: 0%;
+          left:0%;
+          width:20%;
+          bottom: 0%;
+          border-right:solid black 2px;
+        }
+        #frm3{
+          position:fixed;
+          top: 0%;
+          right:0%;
+          width:31%;
+          bottom: 0%;
+          background:yellow;
+          border-left:solid black 2px;
+        }
+        #frm3 img {
+          width: 40%;
+          height: 25%;
+          overflow: hidden;
+          margin-left: 20%;
+          margin-top: 20%;
+          border: 2px solid #333;
+          border-radius: 200px;
+        }
+    </style>
+    <script src="../../socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  </head>
+  <body>
+    <div id="frm2">
+    
+    </div>
+    <div id="frm">
+      <ul id="messages"></ul>
+      <form id='form1' action="/chatting_page">
+        <input id="txt" autocomplete="off" autofocus="on" placeholder="type your message here..." /><button id="btn">Send</button>
+      </form>
+    </div>
+    <div id="frm3"> 
+      <form id='form2' action="/chatting_page">
+        <h1 style="position:absolute;left:10%;color:red"><%- username %></h1>
+        <input id='inp' autocomplete="off" autofocus="on" type="text" placeholder="Type the username of the contact" /><button id="btn1">add contact</button>
+      </form>
+    </div>
+   
+    <script>
+        var tableau = ["https://designoholic.com/wp-content/uploads/2017/07/red-five-dribs.png",
+                      "https://designoholic.com/wp-content/uploads/2017/07/avatar-rogemon.png",
+                      "https://designoholic.com/wp-content/uploads/2017/07/avatar-colored-d.png", 
+                      "https://designoholic.com/wp-content/uploads/2017/07/yala.png",
+                      "https://designoholic.com/wp-content/uploads/2017/07/avatar_dribbble-02.jpg"
+                      ];
+
+        function tabRandom (aleatoir){
+                                  var temp = 0;
+                                  var random = 0;
+                                  for (let i = 0; i < tableau.length; i++) {
+                                      random = Math.floor(Math.random() * tableau.length);
+                                      temp = tableau[i];
+                                      tableau[i] = tableau[random];
+                                      tableau[random] = temp;
+                                  }
+                                  return tableau[aleatoir]
+                              }
+
+        $("#frm3").prepend(`<img src="${tabRandom(1)}">`)
+
+    </script>
+
+    <script>
+            var socket = io();
+            
+            var cur_usr = "#####";
+            var num_of_msg=0;
+            socket.emit('username', '');
+            var chaecker = false;
+            var parser = new DOMParser();
+            $('#form2').submit(function(e){
+              e.preventDefault();
+              socket.emit('add_contact', $('#inp').val());
+              $('#inp').val='';
+            });
+            $('#form1').submit(function(e){
+                e.preventDefault(); 
+                socket.emit('chat_message', $('#txt').val());
+                $('#txt').val('');
+                return false;
+            });
+            socket.on('chat_message', function(msg,username){
+              var usr = "";
+              t=false;
+              for (i=0;i<msg.length;i++){
+                if (msg[i]=='>'){
+                  t=true;
+                  continue;
+                }
+                if (msg[i]=='<' && t==true){
+                  break;
+                }
+                if (t==true){
+                  usr+=msg[i];
+                }
+              }
+              if (!cur_usr.includes(usr)){
+                $('#messages').append($('<li>').html(msg));
+                  $('#messages').append($('<li>').html(""));
+                }
+              else{
+                $('#messages').append($('<li style="color:green;text-align:right;">').html(msg));
+                  $('#messages').append($('<li>').html(""));
+               }
+               window.scrollBy(0,1000000000);
+               num_of_msg+=1;
+            });
+            socket.on('is_online', function(username) {
+              if (chaecker==false){
+                cur_usr = username;
+                chaecker=true;
+              }
+              console.log(cur_usr);
+                $('#messages').append($('<li>').html(username));
+            });
+    </script>
+  </body>
+</html>
