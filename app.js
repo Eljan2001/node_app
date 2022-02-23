@@ -12,7 +12,7 @@ const passportLocalMongoose = require('passport-local-mongoose');
 // passport-local
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
-var PORT = process.env.PORT || 30000
+var PORT = process.env.PORT || 30000;
 var current_user = '';
 var usernm = "";
 
@@ -196,5 +196,5 @@ app.post('/login', function (req, res) {
 });
 
 http.listen(PORT, function () {
-    console.log("Server started...");
+    console.log(`Server started on port ${PORT}`);
 });
